@@ -1,0 +1,6 @@
+@SLT.Manage_HostAddress = http://localhost:5199
+
+GET {{SLT.Manage_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
