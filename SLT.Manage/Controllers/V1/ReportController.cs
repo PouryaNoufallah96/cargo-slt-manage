@@ -20,7 +20,7 @@ namespace SLT.Manage.Controllers.V1
         #region Hash Base
 
         [HttpPost("[action]")]
-        //[Authorize(Permissions.Reporter)]
+        [Authorize(Permissions.Reporter)]
         [CustomRateLimit(maxAttemptsCount: 50)]
         [SwaggerOperation(
             Summary = "Get full invoice and order data using hash",
@@ -38,7 +38,7 @@ namespace SLT.Manage.Controllers.V1
         #region Order / Transfer Base
 
         [HttpPost("[action]")]
-        //[Authorize(Permissions.Reporter)]
+        [Authorize(Permissions.Reporter)]
         [CustomRateLimit(maxAttemptsCount: 50)]
         [SwaggerOperation(
             Summary = "Get order detail by order or transfer id",
@@ -56,7 +56,7 @@ namespace SLT.Manage.Controllers.V1
         #region Wallet Base
 
         [HttpPost("[action]")]
-        //[Authorize(Permissions.Reporter)]
+        [Authorize(Permissions.Reporter)]
         [CustomRateLimit(maxAttemptsCount: 100)]
         [SwaggerOperation(
             Summary = "Get single wallet overview",
@@ -69,7 +69,7 @@ namespace SLT.Manage.Controllers.V1
 
 
         [HttpPost("[action]")]
-        //[Authorize(Permissions.Reporter)]
+        [Authorize(Permissions.Reporter)]
         [CustomRateLimit(maxAttemptsCount: 100)]
         [SwaggerOperation(
             Summary = "Get wallet orders list",
@@ -82,7 +82,7 @@ namespace SLT.Manage.Controllers.V1
 
 
         [HttpPost("[action]")]
-        //[Authorize(Permissions.Reporter)]
+        [Authorize(Permissions.Reporter)]
         [CustomRateLimit(maxAttemptsCount: 100)]
         [SwaggerOperation(
             Summary = "Get wallet invoices list",
@@ -100,7 +100,7 @@ namespace SLT.Manage.Controllers.V1
         #region Total Side
 
         [HttpPost("[action]")]
-        //[Authorize(Permissions.Reporter)]
+        [Authorize(Permissions.Reporter)]
         [CustomRateLimit(maxAttemptsCount: 30)]
         [SwaggerOperation(
             Summary = "Get system total overview",
@@ -112,7 +112,7 @@ namespace SLT.Manage.Controllers.V1
 
 
         [HttpPost("[action]")]
-        //[Authorize(Permissions.Reporter)]
+        [Authorize(Permissions.Reporter)]
         [CustomRateLimit(maxAttemptsCount: 30)]
         [SwaggerOperation(
             Summary = "Get all system orders",
@@ -125,7 +125,7 @@ namespace SLT.Manage.Controllers.V1
 
 
         [HttpPost("[action]")]
-        //[Authorize(Permissions.Reporter)]
+        [Authorize(Permissions.Reporter)]
         [CustomRateLimit(maxAttemptsCount: 30)]
         [SwaggerOperation(
             Summary = "Get all system invoices",
