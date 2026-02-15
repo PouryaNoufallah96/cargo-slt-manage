@@ -54,7 +54,6 @@ namespace SLT.Services._User
                     Permissions = ["SSL1#A#"],
                     Status = UserStatus.Active,
                     WalletAddress = "adminWallet",
-                    PublicKey= publicKey,
                     UserPublicKey= publicKey,
                     SecurityStamp = securityStamp,
                     PasswordHash = _passwordService.Hash("SlTtLs#2025"),

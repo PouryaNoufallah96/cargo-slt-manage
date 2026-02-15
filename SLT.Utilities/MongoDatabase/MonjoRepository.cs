@@ -208,7 +208,7 @@ namespace Utilities.MongoDatabase
                 if (replaceManyInput.FilterExpression != null)
                     filter = Builders<TDocument>.Filter.Where(replaceManyInput.FilterExpression);
                 else
-                    filter = Builders<TDocument>.Filter.Eq(IdentifierName, replaceManyInput.Document.PublicKey);
+                    filter = Builders<TDocument>.Filter.Eq(IdentifierName, replaceManyInput.Document.Id);
 
                 var replaceOne = new ReplaceOneModel<TDocument>(filter, replaceManyInput.Document);
                 operations.Add(replaceOne);

@@ -29,7 +29,7 @@ namespace SLT.Manage.Controllers.V1
         //[SwaggerOperation(Summary = "temp", Tags = ["Auth"])]
         //public async Task<bool> CreateAdminAsync()
         //{
-        //    return await _userService.CreateAdminAsync(CancellationToken.None);
+        //    return await _userService.CreateAdminAsync();
         //}
     }
 }
