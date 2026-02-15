@@ -3,7 +3,7 @@
 
 
 
-IMAGE_NAME="slt.manage"
+IMAGE_NAME="sltmanage.api"
 CONTAINER_NAME="sltmanage.paytomoon.com"
 
 

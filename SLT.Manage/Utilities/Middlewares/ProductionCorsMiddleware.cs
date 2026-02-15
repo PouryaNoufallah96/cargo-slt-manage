@@ -26,6 +26,7 @@ namespace SLT.Api.Utilities.Middlewares
             "https://apimanage.paytomoon.com",
             "https://sltapp.paytomoon.com",
             "https://sltmanage.paytomoon.com",
+            "https://sltpanel.paytomoon.com",
             "https://app.s.com",
             "https://mp.s.com",
             "http://localhost:5132",

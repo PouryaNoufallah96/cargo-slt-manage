@@ -8,11 +8,12 @@ namespace Utilities.MongoDatabase.Documents
     {
         [BsonId]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
-        public string PublicKey { get; set; }
-
+        public string Id { get; set; } 
+              
         public DateTime CreatedMoment { get; set; } = DateTime.UtcNow;
         public DateTime? ModifiedMoment { get; set; } = null;
         [JsonIgnore][BsonDefaultValue(false)] public bool IsDeleted { get; set; }
         [JsonIgnore] public DateTime? DeletedMoment { get; set; } = null;
     }
 }
+ 
