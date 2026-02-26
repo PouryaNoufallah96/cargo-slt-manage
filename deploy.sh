@@ -3,8 +3,8 @@
 
 
 
-IMAGE_NAME="sltmanage.api"
-CONTAINER_NAME="sltmanage.paytomoon.com"
+IMAGE_NAME="gate.api"
+CONTAINER_NAME="gate.sltcargopay.com"
 
 
 echo "Building and publishing the project..."
