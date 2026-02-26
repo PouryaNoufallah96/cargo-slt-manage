@@ -1,0 +1,18 @@
+{
+  "default_branch": "pourya",
+  "branches": [
+    "backup/local-main-stale",
+    "main",
+    "pourya"
+  ],
+  "parent": {
+    "backup/local-main-stale": "pourya",
+    "main": "pourya",
+    "pourya": null
+  },
+  "order": [
+    "pourya",
+    "backup/local-main-stale",
+    "main"
+  ]
+}

@@ -169,6 +169,7 @@ DocProject/Help/html
 
 # Click-Once directory
 publish/
+temp_auto_push.bat
 
 # Publish Web Output
 *.[Pp]ublish.xml
@@ -340,4 +341,5 @@ ASALocalRun/
 .localhistory/
 
 # BeatPulse healthcheck temp database
-healthchecksdb
+healthchecksdbbranch_structure.json
+branch_structure.json
