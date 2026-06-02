@@ -25,7 +25,8 @@ namespace SLT.Api.Utilities.Middlewares
             "https://api.sltcargopay.com",
             "https://panel.sltcargopay.com",
             "https://gate.sltcargopay.com",
-            "https://app.sltcargopay.com"
+            "https://app.sltcargopay.com",
+            "http://localhost:3000",
             };
 
             if (!allowedOrigins.Contains(origin))
