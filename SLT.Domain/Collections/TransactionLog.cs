@@ -34,6 +34,10 @@ namespace SLT.Domain.Collections
         TransactionConfirmed,
         TransactionFailed,
         BlockMined,
-        NetworkStatus
+        NetworkStatus,
+        DepositCreated,
+        EarlyWithdrawn,
+        ProfitWithdrawn,
+        WithdrawnAll
     }
 }
