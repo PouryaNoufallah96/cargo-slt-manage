@@ -2,6 +2,8 @@ namespace SLT.Services._Treasury.DTOs.Results
 {
     public class WalletAnalysisResult
     {
+        public WalletAnalysisMode Mode { get; set; }
+
         public string Wallet { get; set; }
 
         public DateTime ReportAsOfMoment { get; set; }
@@ -22,9 +24,33 @@ namespace SLT.Services._Treasury.DTOs.Results
 
         public List<WalletAssetRank> Ranking { get; set; } = [];
 
+        // Populated only in Leaderboard mode — one ranked list per asset.
+        public List<WalletLeaderboardAsset> TopWallets { get; set; } = [];
+
         public string SummaryText { get; set; }
 
         public List<string> Warnings { get; set; } = [];
+    }
+
+    public enum WalletAnalysisMode { Wallet, Leaderboard }
+
+    public class WalletLeaderboardAsset
+    {
+        public string Asset { get; set; }
+
+        public List<WalletLeaderboardRow> Rows { get; set; } = [];
+    }
+
+    public class WalletLeaderboardRow
+    {
+        // 1 = highest entered principal in this asset.
+        public int Rank { get; set; }
+
+        public string WalletAddress { get; set; }
+
+        public decimal EnteredPrincipal { get; set; }
+
+        public int ContractCount { get; set; }
     }
 
     public class WalletAssetEntered

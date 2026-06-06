@@ -152,6 +152,21 @@ namespace SLT.Services._Treasury.Exports
 
             WriteHeaderBlock(section, meta);
 
+            if (model.Mode == WalletAnalysisMode.Leaderboard)
+            {
+                foreach (var asset in model.TopWallets ?? [])
+                {
+                    WriteSectionTitle(section, "Top Wallets — " + Text(asset == null ? null : asset.Asset));
+                    WriteTable(
+                        section,
+                        ["Rank", "Wallet Address", "Entered Principal", "Contract Count"],
+                        BuildLeaderboardRows(asset == null ? null : asset.Rows));
+                }
+
+                WriteSummaryAndWarnings(section, model.SummaryText, model.Warnings);
+                return Render(doc);
+            }
+
             WriteSectionTitle(section, "Wallet");
             WriteLabelValue(section, "Wallet", Text(model.Wallet));
             WriteLabelValue(section, "Report as-of (UTC)", Moment(model.ReportAsOfMoment));
@@ -630,6 +645,26 @@ namespace SLT.Services._Treasury.Exports
                     Num(rank.Rank),
                     Num(rank.TotalWalletsConsidered),
                     Bool(rank.IsTopN)
+                ];
+            }
+        }
+
+        private static IEnumerable<string[]> BuildLeaderboardRows(List<WalletLeaderboardRow> rows)
+        {
+            if (rows == null)
+                yield break;
+
+            foreach (var row in rows)
+            {
+                if (row == null)
+                    continue;
+
+                yield return
+                [
+                    Num(row.Rank),
+                    Text(row.WalletAddress),
+                    Num(row.EnteredPrincipal),
+                    Num(row.ContractCount)
                 ];
             }
         }

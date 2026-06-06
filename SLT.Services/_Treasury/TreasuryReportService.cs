@@ -347,7 +347,7 @@ namespace SLT.Services._Treasury
             update ??= new WalletAnalysisUpdate();
 
             if (string.IsNullOrEmpty(update.Wallet))
-                throw new BadRequestException("Wallet is required.");
+                return await BuildLeaderboardAsync(update.TopRankThreshold);
 
             var reportAsOfMoment = DateTime.UtcNow;
 
@@ -431,6 +431,7 @@ namespace SLT.Services._Treasury
 
             var result = new WalletAnalysisResult
             {
+                Mode = WalletAnalysisMode.Wallet,
                 Wallet = update.Wallet,
                 ReportAsOfMoment = reportAsOfMoment,
                 RegisteredContractCount = stakes.Count,
@@ -976,6 +977,71 @@ namespace SLT.Services._Treasury
                 .ToList();
 
         // Per-asset rank by total StartAmount entered. No cross-asset combined rank.
+        private async Task<WalletAnalysisResult> BuildLeaderboardAsync(int topRankThreshold)
+        {
+            var reportAsOfMoment = DateTime.UtcNow;
+            var warnings = new List<string>();
+            var topN = topRankThreshold <= 0 ? 10 : Math.Min(topRankThreshold, 100);
+
+            var topWallets = new List<WalletLeaderboardAsset>();
+
+            try
+            {
+                // Finished stakes stay in — they count toward entered totals (same as the per-wallet view).
+                var all = await _stakeRepository.AsQueryable()
+                    .Where(s => s.State != StakeState.NotRegistered
+                             && TreasuryAssets.UniverseSymbols.Contains(s.TokenSymbol))
+                    .Select(s => new { s.TokenSymbol, s.WalletAddress, s.StartAmount })
+                    .ToListAsync();
+
+                foreach (var asset in TreasuryAssets.Universe)
+                {
+                    var symbol = TreasuryAssets.SymbolOf(asset);
+
+                    var rows = all
+                        .Where(s => string.Equals(s.TokenSymbol, symbol, StringComparison.OrdinalIgnoreCase))
+                        .GroupBy(s => (s.WalletAddress ?? string.Empty).ToLower())
+                        .Select(g => new
+                        {
+                            Key = g.Key,
+                            Address = g.Select(x => x.WalletAddress).FirstOrDefault(),
+                            Entered = g.Sum(x => x.StartAmount),
+                            Count = g.Count()
+                        })
+                        .OrderByDescending(g => g.Entered)
+                        .ThenBy(g => g.Key, StringComparer.Ordinal)
+                        .Take(topN)
+                        .Select((g, i) => new WalletLeaderboardRow
+                        {
+                            Rank = i + 1,
+                            WalletAddress = g.Address,
+                            EnteredPrincipal = g.Entered,
+                            ContractCount = g.Count
+                        })
+                        .ToList();
+
+                    topWallets.Add(new WalletLeaderboardAsset { Asset = symbol, Rows = rows });
+                }
+            }
+            catch
+            {
+                topWallets.Clear();
+                warnings.Add("Whale leaderboard was not computable and has been omitted.");
+            }
+
+            var result = new WalletAnalysisResult
+            {
+                Mode = WalletAnalysisMode.Leaderboard,
+                ReportAsOfMoment = reportAsOfMoment,
+                TopWallets = topWallets,
+                Warnings = warnings
+            };
+
+            result.SummaryText = _summaryTextBuilder.BuildWalletAnalysisSummary(result);
+
+            return result;
+        }
+
         private async Task<List<WalletAssetRank>> ComputeWalletRankingAsync(
             string wallet, int topRankThreshold, List<string> warnings)
         {

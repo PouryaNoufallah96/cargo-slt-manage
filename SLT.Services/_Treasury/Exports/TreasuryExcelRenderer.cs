@@ -218,6 +218,34 @@ namespace SLT.Services._Treasury.Exports
                 row = WriteHeaderBlock(sheet, row, meta);
                 row += 1;
 
+                if (model.Mode == WalletAnalysisMode.Leaderboard)
+                {
+                    foreach (var asset in model.TopWallets ?? [])
+                    {
+                        row = WriteSectionTitle(sheet, row, "Top Wallets — " + Text(asset == null ? null : asset.Asset));
+                        row = WriteTable(
+                            sheet,
+                            row,
+                            ["Rank", "Wallet Address", "Entered Principal", "Contract Count"],
+                            BuildLeaderboardRows(asset == null ? null : asset.Rows));
+                        row += 1;
+                    }
+
+                    row = WriteSectionTitle(sheet, row, "Summary");
+                    row = WriteLabelValue(sheet, row, "Summary", Text(model.SummaryText));
+                    row += 1;
+
+                    row = WriteSectionTitle(sheet, row, "Warnings");
+                    row = WriteWarnings(sheet, row, model.Warnings);
+
+                    sheet.Columns().AdjustToContents();
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        return stream.ToArray();
+                    }
+                }
+
                 row = WriteSectionTitle(sheet, row, "Wallet");
                 row = WriteLabelValue(sheet, row, "Wallet", Text(model.Wallet));
                 row = WriteLabelValue(sheet, row, "Report as-of (UTC)", model.ReportAsOfMoment.ToString("u"));
@@ -738,6 +766,26 @@ namespace SLT.Services._Treasury.Exports
                     rank.Rank,
                     rank.TotalWalletsConsidered,
                     rank.IsTopN
+                ];
+            }
+        }
+
+        private static IEnumerable<object[]> BuildLeaderboardRows(List<WalletLeaderboardRow> rows)
+        {
+            if (rows == null)
+                yield break;
+
+            foreach (var row in rows)
+            {
+                if (row == null)
+                    continue;
+
+                yield return
+                [
+                    row.Rank,
+                    Text(row.WalletAddress),
+                    row.EnteredPrincipal,
+                    row.ContractCount
                 ];
             }
         }

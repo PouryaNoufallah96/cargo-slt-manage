@@ -106,6 +106,9 @@ namespace SLT.Services._Treasury.Calculators
             if (result == null)
                 return "No treasury data available.";
 
+            if (result.Mode == WalletAnalysisMode.Leaderboard)
+                return BuildLeaderboardSummary(result);
+
             var wallet = string.IsNullOrEmpty(result.Wallet) ? "(unknown)" : result.Wallet;
 
             if (result.RegisteredContractCount == 0)
@@ -143,6 +146,31 @@ namespace SLT.Services._Treasury.Calculators
             builder.Append('.');
 
             return builder.ToString();
+        }
+
+        private static string BuildLeaderboardSummary(WalletAnalysisResult result)
+        {
+            var assets = result.TopWallets == null
+                ? new List<WalletLeaderboardAsset>()
+                : result.TopWallets.Where(a => a != null && a.Rows != null && a.Rows.Count > 0).ToList();
+
+            if (assets.Count == 0)
+                return "No treasury wallets to rank as of "
+                     + result.ReportAsOfMoment.ToString("u", CultureInfo.InvariantCulture)
+                     + ".";
+
+            var parts = new List<string>();
+            foreach (var asset in assets)
+            {
+                var top = asset.Rows[0];
+                parts.Add(asset.Asset
+                    + " led by " + (string.IsNullOrEmpty(top.WalletAddress) ? "(unknown)" : top.WalletAddress)
+                    + " (" + top.EnteredPrincipal.ToString("0.########", CultureInfo.InvariantCulture) + ")");
+            }
+
+            return "Top wallets per asset by entered principal as of "
+                 + result.ReportAsOfMoment.ToString("u", CultureInfo.InvariantCulture)
+                 + ": " + string.Join("; ", parts) + ".";
         }
 
         public string BuildContractDistributionSummary(ContractDistributionResult result)

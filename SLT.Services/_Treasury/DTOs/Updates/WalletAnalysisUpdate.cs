@@ -2,10 +2,11 @@ namespace SLT.Services._Treasury.DTOs.Updates
 {
     public class WalletAnalysisUpdate
     {
-        // Matched case-insensitively against Stake.WalletAddress.
+        // Optional. Set → single-wallet deep-dive (matched case-insensitively against Stake.WalletAddress).
+        // Empty → leaderboard mode (top wallets per asset).
         public string Wallet { get; set; }
 
-        // Used for IsTopN in the per-asset whale ranking.
+        // Wallet mode: IsTopN cutoff. Leaderboard mode: wallets returned per asset (capped at 100).
         public int TopRankThreshold { get; set; } = 10;
     }
 }
