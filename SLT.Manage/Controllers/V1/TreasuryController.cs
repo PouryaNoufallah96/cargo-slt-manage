@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using SLT.Services._Treasury;
 using SLT.Services._Treasury.DTOs.Results;
 using SLT.Services._Treasury.DTOs.Updates;
@@ -30,7 +31,7 @@ namespace SLT.Manage.Controllers.V1
             Description = "Returns the treasury overview with per-asset obligations, active contract counts and upcoming maturities.",
             Tags = ["Treasury - Overview"]
         )]
-        public async Task<TreasuryOverviewResult> Overview([FromBody] OverviewUpdate update)
+        public async Task<TreasuryOverviewResult> Overview([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] OverviewUpdate update)
             => await _treasuryReportService.GetOverviewAsync(update);
 
         #endregion
@@ -60,8 +61,9 @@ namespace SLT.Manage.Controllers.V1
             Description = "Exports the treasury overview as an Excel file.",
             Tags = ["Treasury - Export"]
         )]
-        public async Task<IActionResult> ExportTreasuryOverviewExcel([FromBody] OverviewUpdate update)
+        public async Task<IActionResult> ExportTreasuryOverviewExcel([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] OverviewUpdate update)
         {
+            update ??= new OverviewUpdate();
             var model = await _treasuryReportService.GetOverviewAsync(update);
             var meta = new ExportMetadata
             {
@@ -82,8 +84,9 @@ namespace SLT.Manage.Controllers.V1
             Description = "Exports the treasury overview as a PDF file.",
             Tags = ["Treasury - Export"]
         )]
-        public async Task<IActionResult> ExportTreasuryOverviewPdf([FromBody] OverviewUpdate update)
+        public async Task<IActionResult> ExportTreasuryOverviewPdf([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] OverviewUpdate update)
         {
+            update ??= new OverviewUpdate();
             var model = await _treasuryReportService.GetOverviewAsync(update);
             var meta = new ExportMetadata
             {
