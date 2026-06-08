@@ -10,4 +10,9 @@
     <ProjectReference Include="..\SLT.Domain\SLT.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" />
+    <PackageReference Include="PDFsharp-MigraDoc" />
+  </ItemGroup>
+
 </Project>

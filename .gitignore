@@ -342,5 +342,16 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 
+# Environment / secrets — these were NOT ignored before.
+# NOTE: adding here does NOT untrack an already-committed file.
+# If a secret file is tracked, run: git rm --cached <file> && rotate the secret.
 .env
 .env.*
+.env.local
+.env.development
+.env.production
+.env.test
+
+# macOS Finder metadata
+.DS_Store
+**/.DS_Store
