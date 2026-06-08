@@ -12,7 +12,7 @@ namespace SLT.Services._Treasury.DTOs.Results
         // Distinct wallets with at least one open stake (case-insensitive).
         public int ActiveUsers { get; set; }
 
-        // Soonest five open maturities by EndMoment.
+        // Open maturities within the limit window, soonest first.
         public List<TreasuryUpcomingMaturity> NearestMaturities { get; set; } = [];
 
         public string SummaryText { get; set; }

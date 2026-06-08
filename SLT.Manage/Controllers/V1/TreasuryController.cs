@@ -30,8 +30,8 @@ namespace SLT.Manage.Controllers.V1
             Description = "Returns the treasury overview with per-asset obligations, active contract counts and upcoming maturities.",
             Tags = ["Treasury - Overview"]
         )]
-        public async Task<TreasuryOverviewResult> Overview()
-            => await _treasuryReportService.GetOverviewAsync();
+        public async Task<TreasuryOverviewResult> Overview([FromBody] OverviewUpdate update)
+            => await _treasuryReportService.GetOverviewAsync(update);
 
         #endregion
 
@@ -60,13 +60,13 @@ namespace SLT.Manage.Controllers.V1
             Description = "Exports the treasury overview as an Excel file.",
             Tags = ["Treasury - Export"]
         )]
-        public async Task<IActionResult> ExportTreasuryOverviewExcel()
+        public async Task<IActionResult> ExportTreasuryOverviewExcel([FromBody] OverviewUpdate update)
         {
-            var model = await _treasuryReportService.GetOverviewAsync();
+            var model = await _treasuryReportService.GetOverviewAsync(update);
             var meta = new ExportMetadata
             {
                 ReportTitle = "Treasury Overview",
-                AppliedFilters = "None",
+                AppliedFilters = ExportFilterText.For(update),
                 GeneratedAtUtc = DateTime.UtcNow,
                 ValuationNote = null
             };
@@ -82,13 +82,13 @@ namespace SLT.Manage.Controllers.V1
             Description = "Exports the treasury overview as a PDF file.",
             Tags = ["Treasury - Export"]
         )]
-        public async Task<IActionResult> ExportTreasuryOverviewPdf()
+        public async Task<IActionResult> ExportTreasuryOverviewPdf([FromBody] OverviewUpdate update)
         {
-            var model = await _treasuryReportService.GetOverviewAsync();
+            var model = await _treasuryReportService.GetOverviewAsync(update);
             var meta = new ExportMetadata
             {
                 ReportTitle = "Treasury Overview",
-                AppliedFilters = "None",
+                AppliedFilters = ExportFilterText.For(update),
                 GeneratedAtUtc = DateTime.UtcNow,
                 ValuationNote = null
             };

@@ -32,7 +32,7 @@ namespace SLT.Services._Report.DTOs
         public string Desctiption { get; set; }
 
         public decimal? TokenAmountAtPayment { get; set; }
-        public string? TokenAmountWeiAtPayment { get; set; }
+        public string TokenAmountWeiAtPayment { get; set; }
         public decimal? TokenPriceAtPayment { get; set; }
 
         public InvoiceState State { get; set; } 

@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Net;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Utilities.Enums;
 using Utilities.Exceptions.Common;
@@ -10,7 +11,7 @@ using Utilities.Models.Results;
 
 namespace Utilities.Middlewares
 {
-    public class CustomExceptionHandlerMiddleware(RequestDelegate next, IHostingEnvironment env, ILogger<CustomExceptionHandlerMiddleware> logger)
+    public class CustomExceptionHandlerMiddleware(RequestDelegate next, IWebHostEnvironment env, ILogger<CustomExceptionHandlerMiddleware> logger)
     {
         public async Task Invoke(HttpContext context)
         {

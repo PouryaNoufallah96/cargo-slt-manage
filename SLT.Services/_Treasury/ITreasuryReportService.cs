@@ -7,7 +7,7 @@ namespace SLT.Services._Treasury
     {
 
         // dashboard
-        Task<TreasuryOverviewResult> GetOverviewAsync();
+        Task<TreasuryOverviewResult> GetOverviewAsync(OverviewUpdate update);
 
         // plan durations (filter lookup)
         Task<PlanTypeResult> GetPlanTypesAsync();
