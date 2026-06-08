@@ -20,7 +20,7 @@ namespace SLT.Domain.Collections
         public string Desctiption { get; set; }
 
         public decimal? TokenAmountAtPayment { get; set; }
-        public string? TokenAmountWeiAtPayment { get; set; }
+        public string TokenAmountWeiAtPayment { get; set; }
         public decimal? TokenPriceAtPayment { get; set; }
 
         public InvoiceState State { get; set; } = InvoiceState.Pending;

@@ -30,7 +30,7 @@ namespace Utilities.Services
                 {
                     await handle();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     //SentrySdk.CaptureException(e);
                 }
