@@ -11,8 +11,7 @@ namespace SLT.Services._Treasury.Exports
                 return "None";
 
             var parts = new List<string>();
-            if (update.Limit.HasValue)
-                parts.Add("Limit=" + update.Limit.Value + "d");
+            parts.Add("Limit=" + (update.Limit ?? 30) + "d");
             return Join(parts);
         }
 
