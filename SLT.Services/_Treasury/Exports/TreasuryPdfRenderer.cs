@@ -870,14 +870,42 @@ namespace SLT.Services._Treasury.Exports
 
     internal sealed class TreasuryFontResolver : IFontResolver
     {
-        private static readonly byte[] _regular = Load();
+        private const string EmbeddedFontResource = "SLT.Services._Treasury.Exports.Fonts.Roboto-Regular.ttf";
+
+        private static readonly byte[] _regular;
+
+        // Static ctor, not a field initializer: a missing font fails with a clear error, not an opaque NRE.
+        static TreasuryFontResolver()
+        {
+            _regular = LoadEmbedded()
+                ?? LoadFromSystem()
+                ?? throw new FileNotFoundException(
+                    "No font available for PDF rendering: embedded resource '" + EmbeddedFontResource
+                    + "' is missing and no system font was found.");
+        }
 
         public byte[] GetFont(string faceName) => _regular;
 
         public FontResolverInfo ResolveTypeface(string familyName, bool isBold, bool isItalic)
             => new FontResolverInfo("TreasuryDefault");
 
-        private static byte[] Load()
+        private static byte[] LoadEmbedded()
+        {
+            var assembly = typeof(TreasuryFontResolver).Assembly;
+            using (var stream = assembly.GetManifestResourceStream(EmbeddedFontResource))
+            {
+                if (stream == null)
+                    return null;
+
+                using (var buffer = new MemoryStream())
+                {
+                    stream.CopyTo(buffer);
+                    return buffer.ToArray();
+                }
+            }
+        }
+
+        private static byte[] LoadFromSystem()
         {
             string[] candidates =
             {
@@ -888,11 +916,10 @@ namespace SLT.Services._Treasury.Exports
             };
 
             foreach (var path in candidates)
-                if (System.IO.File.Exists(path))
-                    return System.IO.File.ReadAllBytes(path);
+                if (File.Exists(path))
+                    return File.ReadAllBytes(path);
 
-            throw new System.IO.FileNotFoundException(
-                "No system TrueType font found for PDF rendering (install a font, e.g. dejavu/liberation, in the deploy image).");
+            return null;
         }
     }
 }

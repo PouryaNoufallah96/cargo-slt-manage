@@ -8,11 +8,9 @@ namespace SLT.Services._Treasury.Calculators
     {
         public DateWindow ResolveMaturityWindow(MaturityHorizon horizon, DateTime? customFrom, DateTime? customTo, DateTime reportAsOfMoment)
         {
-            if (horizon == MaturityHorizon.Custom)
+            // Both custom bounds present → use them, even without Horizon=Custom (the date picker omits Horizon).
+            if (customFrom.HasValue && customTo.HasValue)
             {
-                if (!customFrom.HasValue || !customTo.HasValue)
-                    throw new BadRequestException("A custom maturity horizon requires both CustomFrom and CustomTo.");
-
                 if (customFrom.Value >= customTo.Value)
                     throw new BadRequestException("CustomFrom must be strictly earlier than CustomTo.");
 
@@ -22,6 +20,9 @@ namespace SLT.Services._Treasury.Calculators
                     ToExclusive = customTo.Value
                 };
             }
+
+            if (horizon == MaturityHorizon.Custom)
+                throw new BadRequestException("A custom maturity horizon requires both CustomFrom and CustomTo.");
 
             // 24 months = AddMonths(24), not 730 days
             if (horizon == MaturityHorizon.Next24Months)
