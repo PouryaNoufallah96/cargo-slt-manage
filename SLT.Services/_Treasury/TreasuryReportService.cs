@@ -20,8 +20,10 @@ namespace SLT.Services._Treasury
         IDepositTimeValuator _depositTimeValuator,
         ISummaryTextBuilder _summaryTextBuilder) : ITreasuryReportService, IScopedDependency
     {
-        public async Task<TreasuryOverviewResult> GetOverviewAsync()
+        public async Task<TreasuryOverviewResult> GetOverviewAsync(OverviewUpdate update)
         {
+            update ??= new OverviewUpdate();
+
             var reportAsOfMoment = DateTime.UtcNow;
 
             // LUSD/GOLDGR only; NotRegistered excluded.
@@ -87,9 +89,13 @@ namespace SLT.Services._Treasury
                 .Distinct()
                 .Count();
 
+            var maturityHorizonEnd = update.Limit.HasValue
+                ? reportAsOfMoment.AddDays(update.Limit.Value)
+                : (DateTime?)null;
+
             var nearestMaturities = openStakes
+                .Where(o => !maturityHorizonEnd.HasValue || o.Stake.EndMoment <= maturityHorizonEnd.Value)
                 .OrderBy(o => o.Stake.EndMoment)
-                .Take(5)
                 .Select(o => new TreasuryUpcomingMaturity
                 {
                     StakeReference = o.Stake.StakeReference,

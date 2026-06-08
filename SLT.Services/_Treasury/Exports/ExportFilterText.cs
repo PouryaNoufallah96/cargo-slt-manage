@@ -5,6 +5,17 @@ namespace SLT.Services._Treasury.Exports
 {
     public static class ExportFilterText
     {
+        public static string For(OverviewUpdate update)
+        {
+            if (update == null)
+                return "None";
+
+            var parts = new List<string>();
+            if (update.Limit.HasValue)
+                parts.Add("Limit=" + update.Limit.Value + "d");
+            return Join(parts);
+        }
+
         public static string For(MaturityCalendarUpdate update)
         {
             if (update == null)
