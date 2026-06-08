@@ -201,13 +201,15 @@ namespace SLT.Services._Treasury
                 }
             }
 
+            var assets = AssetsFor(update.Asset);
+
             var result = new MaturityCalendarResult
             {
                 ReportAsOfMoment = reportAsOfMoment,
                 FromInclusive = window.FromInclusive,
                 ToExclusive = window.ToExclusive,
-                DueNowOverdue = BuildBucket(dueNowOverdue),
-                FutureMaturing = BuildBucket(futureMaturing),
+                DueNowOverdue = BuildBucket(dueNowOverdue, assets),
+                FutureMaturing = BuildBucket(futureMaturing, assets),
                 Warnings = warnings
             };
 
@@ -500,6 +502,8 @@ namespace SLT.Services._Treasury
             var totalUsd = 0m;
             var invalidPriceCount = 0;
 
+            var assets = AssetsFor(update.Asset);
+
             // Value-weighted % uses remaining open principal (TokenAmount), not StartAmount.
             foreach (var open in openStakes)
             {
@@ -532,7 +536,7 @@ namespace SLT.Services._Treasury
                         .Where(o => o.Stake.MonthDuration == duration)
                         .ToList();
 
-                    var byAsset = TreasuryAssets.Universe
+                    var byAsset = assets
                         .Select(asset =>
                         {
                             var symbol = TreasuryAssets.SymbolOf(asset);
@@ -632,6 +636,8 @@ namespace SLT.Services._Treasury
                 .Select(w => new { w.CreatedMoment, w.Symbol, w.ProfitAmount, w.Type, w.StakeReference })
                 .ToListAsync();
 
+            var assets = AssetsFor(update.Asset);
+
             var allPeriods = new List<PeriodPerformance>();
             foreach (var period in periods)
             {
@@ -643,7 +649,7 @@ namespace SLT.Services._Treasury
                     .Where(w => w.CreatedMoment >= period.FromInclusive && w.CreatedMoment < period.ToExclusive)
                     .ToList();
 
-                var attractedByAsset = TreasuryAssets.Universe
+                var attractedByAsset = assets
                     .Select(asset =>
                     {
                         var symbol = TreasuryAssets.SymbolOf(asset);
@@ -657,7 +663,7 @@ namespace SLT.Services._Treasury
                     })
                     .ToList();
 
-                var profitPaidByAsset = TreasuryAssets.Universe
+                var profitPaidByAsset = assets
                     .Select(asset =>
                     {
                         var symbol = TreasuryAssets.SymbolOf(asset);
@@ -782,10 +788,11 @@ namespace SLT.Services._Treasury
                 // Within-term but maturing after the window: not counted in either bucket.
             }
 
-            var dueByAsset = BuildAssetObligations(dueNowOverdue);
-            var futureByAsset = BuildAssetObligations(futureWithinHorizon);
+            var assets = AssetsFor(update.Asset);
+            var dueByAsset = BuildAssetObligations(dueNowOverdue, assets);
+            var futureByAsset = BuildAssetObligations(futureWithinHorizon, assets);
 
-            var totalByAsset = TreasuryAssets.Universe
+            var totalByAsset = assets
                 .Select(asset =>
                 {
                     var symbol = TreasuryAssets.SymbolOf(asset);
@@ -963,8 +970,17 @@ namespace SLT.Services._Treasury
             return result;
         }
 
-        private static List<AssetObligation> BuildAssetObligations(List<OpenStake> openStakes)
-            => TreasuryAssets.Universe
+        // Per-asset sections list only the filtered asset(s) so "filtered out" (absent) differs from "zero" (present).
+        private static TreasuryAsset[] AssetsFor(TreasuryAssetFilter filter)
+            => filter switch
+            {
+                TreasuryAssetFilter.LUSD => [TreasuryAsset.LUSD],
+                TreasuryAssetFilter.GOLDGR => [TreasuryAsset.GOLDGR],
+                _ => TreasuryAssets.Universe
+            };
+
+        private static List<AssetObligation> BuildAssetObligations(List<OpenStake> openStakes, TreasuryAsset[] assets)
+            => assets
                 .Select(asset =>
                 {
                     var symbol = TreasuryAssets.SymbolOf(asset);
@@ -1096,9 +1112,9 @@ namespace SLT.Services._Treasury
             return ranking;
         }
 
-        private static MaturityCalendarBucket BuildBucket(List<OpenStake> openStakes)
+        private static MaturityCalendarBucket BuildBucket(List<OpenStake> openStakes, TreasuryAsset[] assets)
         {
-            var perAsset = TreasuryAssets.Universe
+            var perAsset = assets
                 .Select(asset => BuildAssetTotals(openStakes, TreasuryAssets.SymbolOf(asset)))
                 .ToList();
 
@@ -1115,7 +1131,7 @@ namespace SLT.Services._Treasury
                     return new MaturityPlanBreakdown
                     {
                         PlanType = duration,
-                        PerAsset = TreasuryAssets.Universe
+                        PerAsset = assets
                             .Select(asset => BuildAssetTotals(planStakes, TreasuryAssets.SymbolOf(asset)))
                             .ToList()
                     };
