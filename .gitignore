@@ -176,6 +176,7 @@ publish/
 # Note: Comment the next line if you want to checkin your web deploy settings,
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
+temp_auto_push.bat
 *.publishproj
 
 # Microsoft Azure Web App publish settings. Comment the next line if you want to
@@ -355,3 +356,4 @@ healthchecksdb
 # macOS Finder metadata
 .DS_Store
 **/.DS_Store
+branch_structure.json

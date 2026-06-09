@@ -89,12 +89,10 @@ namespace SLT.Services._Treasury
                 .Distinct()
                 .Count();
 
-            var maturityHorizonEnd = update.Limit.HasValue
-                ? reportAsOfMoment.AddDays(update.Limit.Value)
-                : (DateTime?)null;
+            var maturityHorizonEnd = reportAsOfMoment.AddDays(update.Limit ?? 30);
 
             var nearestMaturities = openStakes
-                .Where(o => !maturityHorizonEnd.HasValue || o.Stake.EndMoment <= maturityHorizonEnd.Value)
+                .Where(o => o.Stake.EndMoment <= maturityHorizonEnd)
                 .OrderBy(o => o.Stake.EndMoment)
                 .Select(o => new TreasuryUpcomingMaturity
                 {
