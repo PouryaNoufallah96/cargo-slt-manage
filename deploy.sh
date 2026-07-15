@@ -1,32 +1,92 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -e
 
+# Zero-downtime-on-failure deploy (same pattern as cargo/backend/slt.api's
+# deploy.sh): build a new image while the live container keeps serving, boot it
+# as a throwaway canary via plain `docker run` (not `docker-compose up`),
+# health-check it, and only then swap it into the live container. A bad
+# publish/build/boot leaves production untouched - the job just fails.
+#
+# `docker run` (not `docker-compose up`) for canary/swap: compose matches an
+# existing container by project+service label regardless of container_name,
+# and this fleet's compose v1.29.2 crashes/leaves zombies on a recreate-in-place
+# (documented in infra/ci/deploy.yml, hit for real on slt.api). `docker-compose
+# config` is still used once, only to resolve docker-compose.yml's
+# .env-interpolated `environment:` block into plain `docker run --env-file`
+# lines - compose itself never creates or touches a container.
 
-
-
+SERVICE="sltmanage.paytomoon.com"
 IMAGE_NAME="gate.api"
-CONTAINER_NAME="gate.sltcargopay.com"
+LIVE_NAME="gate.sltcargopay.com"
+CANARY_NAME="${LIVE_NAME}_canary"
+CANARY_PORT="13008"
+INTERNAL_PORT="80"
+LIVE_PORT="3008"
 
+ENV_FILE=""
+cleanup_canary() {
+  docker rm -f "$CANARY_NAME" >/dev/null 2>&1 || true
+  [ -n "$ENV_FILE" ] && rm -f "$ENV_FILE"
+}
+trap cleanup_canary EXIT
 
-echo "Building and publishing the project..."
-dotnet build SLT.Manage/SLT.Manage.csproj -c Release
+echo "Publishing..."
+# dotnet publish builds internally - a separate `dotnet build` beforehand races it
+# for the same obj/ files (MSBuild node reuse keeps handles open), causing
+# IOException: process cannot access the file (hit for real on slt.api).
 dotnet publish SLT.Manage/SLT.Manage.csproj -c Release -o publish
 
-echo " Building Docker image..."
-docker build -t $IMAGE_NAME .
+echo "Building new image (production container keeps serving)..."
+docker build -t "$IMAGE_NAME" .
 
-echo "Stopping old container if exists..."
-docker-compose down
+echo "Resolving environment from docker-compose.yml + .env..."
+ENV_FILE=$(mktemp)
+docker-compose config | python3 -c "
+import sys, yaml
+d = yaml.safe_load(sys.stdin)
+env = d['services']['${SERVICE}']['environment']
+items = env.items() if isinstance(env, dict) else (e.split('=', 1) for e in env)
+for k, v in items:
+    print(f'{k}={v}')
+" > "$ENV_FILE"
 
+echo "Starting canary on 127.0.0.1:${CANARY_PORT} for a health check..."
+cleanup_canary_container_only() { docker rm -f "$CANARY_NAME" >/dev/null 2>&1 || true; }
+cleanup_canary_container_only
+docker run -d --name "$CANARY_NAME" \
+  --env-file "$ENV_FILE" \
+  -v /etc/timezone:/etc/timezone:ro \
+  -v /etc/localtime:/etc/localtime:ro \
+  -p "127.0.0.1:${CANARY_PORT}:${INTERNAL_PORT}" \
+  "$IMAGE_NAME"
 
-echo "Starting container..."
-docker-compose up -d
+echo "Health-checking canary..."
+ok=0
+for i in $(seq 1 15); do
+  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:${CANARY_PORT}/" || echo 000)
+  echo "  attempt $i: HTTP $code"
+  case "$code" in
+    000|5[0-9][0-9]) ;;
+    *) ok=1; break ;;
+  esac
+  sleep 4
+done
 
+if [ "$ok" -ne 1 ]; then
+  echo "Canary failed its health check - leaving the production container untouched."
+  docker logs --tail 100 "$CANARY_NAME" || true
+  exit 1
+fi
+
+echo "Canary healthy - swapping into production (brief blip)..."
+docker ps -aq --filter "name=${LIVE_NAME}" | xargs -r docker rm -f >/dev/null 2>&1 || true
+cleanup_canary_container_only
+docker run -d --name "$LIVE_NAME" --restart unless-stopped \
+  --env-file "$ENV_FILE" \
+  -v /etc/timezone:/etc/timezone:ro \
+  -v /etc/localtime:/etc/localtime:ro \
+  -p "127.0.0.1:${LIVE_PORT}:${INTERNAL_PORT}" \
+  "$IMAGE_NAME"
 
 echo "Container status:"
-docker-compose ps
-
-echo "List of all containers:"
-docker ps -a
-
-echo "Showing logs (press Ctrl+C to exit)..."
-docker-compose logs -f
+docker ps --filter "name=${LIVE_NAME}"
