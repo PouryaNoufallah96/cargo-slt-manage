@@ -18,7 +18,12 @@ set -e
 SERVICE="sltmanage.paytomoon.com"
 IMAGE_NAME="gate.api"
 LIVE_NAME="gate.sltcargopay.com"
-CANARY_NAME="${LIVE_NAME}_canary"
+# Suffixed with this run's own PID: a fixed canary name collides ("Conflict...
+# already in use") if any other process (e.g. another concurrent deploy of
+# this same script) is mid-run against this same server at the same time -
+# hit for real once already. A PID-unique name can never collide with a
+# concurrent run, whatever triggered it.
+CANARY_NAME="${LIVE_NAME}_canary_$$"
 CANARY_PORT="13008"
 INTERNAL_PORT="80"
 LIVE_PORT="3008"
